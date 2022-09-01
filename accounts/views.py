@@ -1,5 +1,6 @@
 # accounts/views.py
 # Django modules
+from email import message
 from email.message import EmailMessage
 from django.shortcuts import render, redirect
 from django.contrib import messages, auth
@@ -130,3 +131,81 @@ def dashboard(request):
     Users logged only
     """
     return render(request, "accounts/dashboard.html")
+
+
+def forgot_password(request):
+    """
+    Forgot password
+    """
+    # Obtaining the email from the database
+    if request.method == 'POST':
+        email = request.POST["email"]
+
+        if Account.objects.filter(email=email).exists():
+            user = Account.objects.get(email__exact=email)
+
+            current_site = get_current_site(request)
+            mail_subject = "Restaurar password"
+            body = render_to_string("accounts/reset_password_email.html", {
+                "user": user,
+                "domain": current_site,
+                "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                "token": default_token_generator.make_token(user),
+            })
+
+            to_email = email
+            send_email = EmailMessage(mail_subject, body, to=[to_email])
+            send_email.send()
+
+            messages.success(request, "Un correo electrónico fue enviado a tu bandeja de entrada para restaurar tu contraseña")
+            return redirect("login")
+        else:
+            messages.error(request, "La cuenta de usuario no existe")
+            return redirect("forgot_password")
+
+
+    return render(request, "accounts/forgot_password.html")
+
+
+def reset_password_validate(request, uidb64, token):
+    """
+    Reset password validate
+    Capture the uid parameter and user
+    """
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = Account._default_manager.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, Account.DoesNotExist):
+        user = None
+    
+    if user is not None and default_token_generator.check_token(user, token):
+        request.session["uid"] = uid
+        messages.success(request, "Por favor restaura tu contraseña")
+        return redirect(request, "reset_password.html")
+    # If account does not exist
+    else:
+        messages.error(request, "El enlace ha expirado")
+        return redirect("login")
+
+
+def reset_password(request):
+    """
+    Reset password
+    """
+    if request.method == "POST":
+        # Captures password and confirm_password
+        password = request.POST["password"]
+        confirm_password = request.POST["confirm_password"]
+
+        if password == confirm_password:
+            uid = request.session.get("uid")
+            user = Account.objects.get(pk=uid)
+            user.set_password(password)
+            user.save()
+            messages.success(request, "La contraseña se restauró correctamente")
+            return redirect("login")
+        else:
+            messages.error(request, "La contraseña no concuerda")
+            return redirect("reset_password")
+    else:
+        return render(request, "accounts/reset_password.html")
