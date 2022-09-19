@@ -2,6 +2,7 @@
 # Django modules
 from django.db import models
 from django.urls import reverse
+from django.db.models import Avg, Count
 
 # My modules
 from category.models import Category
@@ -29,7 +30,23 @@ class Product(models.Model):
 
     def __str__(self):
         return self.product_name
+    
 
+    def average_review(self):
+        # Return average review
+        reviews = ReviewRating.objects.filter(product=self, status=True).aggregate(average=Avg("rating"))
+        avg = 0
+        if reviews["average"] is not None:
+            avg = float(reviews["average"])
+        return avg
+
+
+    def count_review(self):
+        reviews = ReviewRating.objects.filter(product=self, status=True).aggregate(count=Count("id"))
+        count = 0
+        if reviews["count"] is not None:
+            count = int(reviews["count"])
+        return count
 
 class VariationManager(models.Manager):
     """
