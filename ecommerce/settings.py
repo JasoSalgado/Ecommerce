@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", cast=bool, default=True)
 
 ALLOWED_HOSTS = []
 
@@ -34,6 +34,8 @@ INSTALLED_APPS = [
     'store',
     'carts',
     'orders',
+    # Admin honeypot for hackers
+    # 'admin_honeypot',
 ]
 
 MIDDLEWARE = [
@@ -44,7 +46,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # django-session-timeout
+    'django_session_timeout.middleware.SessionTimeoutMiddleware',
 ]
+# Config expire session 
+SESSION_EXPIRE_SECONDS = 1800
+SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
+SESSION_TIMEOUT_REDIRECT = "accounts/login"
+
 
 ROOT_URLCONF = 'ecommerce.urls'
 
@@ -140,7 +149,7 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = config("EMAIL_PORT")
 EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
-EMAIL_USE_TLS = True
+EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool)
 
 
 # Default primary key field type
