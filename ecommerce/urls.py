@@ -15,7 +15,6 @@ Including another URLconf
 """
 # ecommerce.urls
 # Django modules
-from xml.etree.ElementInclude import include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -26,7 +25,7 @@ from . import views
 
 urlpatterns = [
     # False page to hackers with django-admin-honeypot
-    # path("admin/", include("admin_honeypot.urls", namespace="admin_honeypot")),
+    path("admin/", include("admin_honeypot.urls", namespace="admin_honeypot")),
 
     # Secure admin login
     path('securelogin/', admin.site.urls),

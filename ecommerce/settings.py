@@ -1,4 +1,3 @@
-from pickle import TRUE
 from decouple import config
 
 from pathlib import Path
@@ -16,7 +15,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", cast=bool, default=True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["http://ecommerce-env.eba-p2nrmp3a.us-west-2.elasticbeanstalk.com/"]
 
 
 # Application definition
@@ -35,7 +34,7 @@ INSTALLED_APPS = [
     'carts',
     'orders',
     # Admin honeypot for hackers
-    # 'admin_honeypot',
+    'admin_honeypot',
 ]
 
 MIDDLEWARE = [
