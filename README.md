@@ -17,4 +17,6 @@ A --> J(Dashboard)
 A --> K(Registration)
 A --> L(Login)
 A --> M(Logout)
+A --> N(Elastic Beanstalk)
+A --> O(S3 bucket to load images)
 ```
