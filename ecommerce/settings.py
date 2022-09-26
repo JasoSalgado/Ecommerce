@@ -1,9 +1,10 @@
+from pickle import TRUE
 from decouple import config
 
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve(strict=TRUE).parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -15,7 +16,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", cast=bool, default=True)
 
-ALLOWED_HOSTS = ["ecommerce-env.eba-j6tsug2q.us-west-2.elasticbeanstalk.com/", "127.0.0.1"]
+ALLOWED_HOSTS = ["ecommerce-env.eba-j6tsug2q.us-west-2.elasticbeanstalk.com/", "127.0.0.1","*"]
 
 
 # Application definition
@@ -35,6 +36,7 @@ INSTALLED_APPS = [
     'orders',
     # Admin honeypot for hackers
     'admin_honeypot',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -141,10 +143,31 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 # Static root
-STATIC_ROOT = BASE_DIR /'static'
+# STATIC_ROOT = BASE_DIR /'static'
+# STATICFILES_DIRS = [
+#     'ecommerce/static'
+# ]
+
+# AWS S3 Static Files Configuration
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = 'public-read'
+AWS_LOCATION = 'static'
+
 STATICFILES_DIRS = [
-    'ecommerce/static'
+    'ecommerce/static',
 ]
+
+STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+DEFAULT_STORAGE = 'ecommerce.media_storages.MediaStorage'
 
 # Media root
 MEDIA_URL = '/media/'
